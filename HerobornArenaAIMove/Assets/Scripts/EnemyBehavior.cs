@@ -4,22 +4,68 @@ using JetBrains.Annotations;
 using Unity.Properties;
 using Unity.VisualScripting;
 using UnityEngine;
+using UnityEngine.AI;
 
 public class EnemyBehavior : MonoBehaviour
 {
     private static SphereCollider sphereCollider;
 
-    // Start is called before the first frame update
+    public Transform patrolRoute;
+    public List<Transform> locations;
+
+    private int locationIndex = 0;
+    private NavMeshAgent agent;
+
+    public Transform player;
+
+    private int _lives = 3;
+    public int EnemyLives
+    {
+        get {  return _lives; }
+        private set
+        {
+            _lives = value;
+
+            if (_lives <= 0)
+            {
+                Destroy(this.gameObject);
+                Debug.Log("Enemy Defeated!");
+            }
+        }
+    }
+
     void Start()
     {
-        // Get the BoxCollider component attached to the cube
         sphereCollider = GetComponent<SphereCollider>();
+        agent = GetComponent<NavMeshAgent>();
+        player = GameObject.Find("Player").transform;
+        InitializePatrolRoute();
+        MoveToNextPatrolLocation();
     }
+
+    void MoveToNextPatrolLocation()
+    {
+        if (locations.Count == 0)
+        {
+            return;
+        }
+        agent.destination = locations[locationIndex].position;
+        locationIndex = (locationIndex + 1) % locations.Count;
+    }
+
+    void InitializePatrolRoute()
+    {
+        foreach(Transform child in patrolRoute)
+        {
+            locations.Add(child);
+        }
+    }
+
     void OnTriggerEnter(Collider other)
     {
-        // Check if the object that entered the trigger is the player
-        if (other.CompareTag("Player")) // Make sure your player has the "Player" tag
+        if (other.name == "Player")
         {
+            agent.destination = player.position;
             GameBehavior.detected = "DETECTED";
         }
     }
@@ -33,24 +79,30 @@ public class EnemyBehavior : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-
+        if (agent.remainingDistance < 0.2f && !agent.pathPending)
+        {
+            MoveToNextPatrolLocation();
+        }
     }
     public static void ShrinkCollider()
     {
         if (sphereCollider != null)
         {
-            // Get the current radius of the SphereCollider
             float currentRadius = sphereCollider.radius;
-
-            // Shrink the radius by half
             sphereCollider.radius = currentRadius * 0.5f;
-
-            // Optionally, log to confirm the size change
             Debug.Log("Enemy Detection Radius Halved!");
         }
         else
         {
             Debug.LogError("SphereCollider component not found!");
+        }
+    }
+    private void OnCollisionEnter(Collision collision)
+    {
+        if (collision.gameObject.name == "Bullet(Clone)")
+        {
+            EnemyLives -= 1;
+            Debug.Log("Enemy hurt!");
         }
     }
 }

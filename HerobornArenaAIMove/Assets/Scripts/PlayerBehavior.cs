@@ -4,6 +4,7 @@ using JetBrains.Annotations;
 using Unity.VisualScripting;
 
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class PlayerBehavior : MonoBehaviour
 {
@@ -31,11 +32,14 @@ public class PlayerBehavior : MonoBehaviour
     public static bool sprintBoost = false;
 
     public EnemyBehavior enemy;
+    private GameBehavior _gameManager;
 
     void Start()
     {
         _rb = GetComponent<Rigidbody>();
         jump = new Vector3(0.0f, 2.0f, 0.0f);
+
+        _gameManager = GameObject.Find("Game Manager").GetComponent<GameBehavior>();
     }
 
     void Update()
@@ -134,6 +138,14 @@ public class PlayerBehavior : MonoBehaviour
         if (collision.gameObject.CompareTag("Floor"))
         {
             isGrounded = true;
+        }
+        if (collision.gameObject.name == "Enemy")
+        {
+            GameBehavior.showLoseScreen = true;
+        }
+        if (collision.gameObject.name == "WinRegion")
+        {
+            GameBehavior.showWinScreen = true;
         }
     }
         public static void redStaminaPickedUp()

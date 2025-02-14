@@ -5,7 +5,8 @@ using UnityEngine.SceneManagement;
 
 public class GameBehavior : MonoBehaviour
 {
-    public bool showWinScreen = false;
+    public static bool showWinScreen = false;
+    public static bool showLoseScreen = false;
     public static int staminaText;
     public static string detected = "HIDDEN";
     public static int bullets = 10;
@@ -22,15 +23,22 @@ public class GameBehavior : MonoBehaviour
         GUI.Box(new Rect(20, 80, 150, 25), "Bullets: " +
            bullets);
 
-        if (showWinScreen)
+        if (showWinScreen == true)
         {
-            if (GUI.Button(new Rect(Screen.width / 2 - 100,
-               Screen.height / 2 - 50, 200, 100), "YOU WON!"))
-            {
-                SceneManager.LoadScene(0);
-                Time.timeScale = 1.0f;
-            }
+            GUI.Button(new Rect(Screen.width / 2 - 100, Screen.height / 2 - 50, 200, 100), "YOU WON!");
+            Time.timeScale = 0f;
         }
+        if (showLoseScreen == true)
+        {
+            GUI.Button(new Rect(Screen.width / 2 - 100, Screen.height / 2 - 50, 200, 100), "YOU LOSE!");
+            Time.timeScale = 0f;
+        }
+    }
+
+    void RestartLevel()
+    {
+        SceneManager.LoadScene(0);
+        Time.timeScale = 1.0f;
     }
     // Start is called before the first frame update
     void Start()
